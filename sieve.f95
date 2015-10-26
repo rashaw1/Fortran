@@ -59,4 +59,7 @@ WRITE(*, *) 'The primes up to', N
 WRITE(*, 10) (i, sieved(i), i = 1, m)
 10 FORMAT(1X, I5, I10)
 
+DEALLOCATE(sieved)
+DEALLOCATE(unsieved)
+
 END PROGRAM sieve
