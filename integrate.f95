@@ -5,6 +5,39 @@ MODULE integrate
 
 CONTAINS
 
+  SUBROUTINE montecarlo(val, x0, x1, f, N)
+    !
+    ! PURPOSE: To use monte carlo integration
+    !
+    IMPLICIT NONE
+    INTEGER, PARAMETER :: dbl = SELECTED_REAL_KIND(15, 307)
+    REAL(dbl), INTENT(IN) :: x0, x1 ! Limits of integration
+    REAL(dbl), INTENT(OUT) :: val ! Return value
+    INTEGER, INTENT(IN) :: N ! Number of points
+    INTEGER :: i ! Counter
+    REAL(dbl) :: x ! Random number placeholder
+    
+    ! Declare interface to user defined function
+    INTERFACE
+       REAL(dbl) PURE FUNCTION f(y)
+         IMPORT dbl
+         REAL(dbl), INTENT(IN) :: y
+       END FUNCTION f
+    END INTERFACE
+    
+    ! Initialise return value
+    val = 0.
+
+    ! Main loop
+    DO i = 1, N
+       CALL RANDOM_NUMBER(x) ! Uniformly distributed in [0., 1.]
+       x = x0+x*(x1-x0) ! Scaled to correct range
+       val = val + f(x)
+    END DO
+    val  = (x1-x0)*val/REAL(N)
+
+  END SUBROUTINE montecarlo
+  
   SUBROUTINE romberg(val, x0, x1, f, N)
     !
     ! PURPOSE: To use the Romberg convergence acceleration method
@@ -16,10 +49,10 @@ CONTAINS
     REAL(dbl), INTENT(OUT) :: val ! Return value
     INTEGER, INTENT(IN) :: N ! Number of intervals
     INTEGER :: i, j ! Counters
-    INTEGER :: MAX = 10 ! Max number of iterations
+    INTEGER :: MAX = 6 ! Max number of iterations
     REAL(dbl) :: h ! initial width of intervals
-    REAL(dbl), DIMENSION(10, 10) :: R ! Romberg values
-    REAL(dbl) :: CUTOFF = 1e-7
+    REAL(dbl), DIMENSION(6, 6) :: R ! Romberg values
+    REAL(dbl) :: CUTOFF = 1e-8
     
     ! Declare interface to user defined function
     INTERFACE
@@ -151,7 +184,8 @@ CONTAINS
 
   SUBROUTINE simpson(val, x0, x1, f, N)
     !
-    ! PURPOSE: Simpson's rule for integration - using weighted abscissae instead of fixed shapes
+    ! PURPOSE: Simpson's rule for integration - using weighted abscissae
+    !          instead of fixed shapes
     !
     IMPLICIT NONE
     INTEGER, PARAMETER :: dbl = SELECTED_REAL_KIND(15, 307)
